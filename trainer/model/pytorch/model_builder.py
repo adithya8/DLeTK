@@ -4,7 +4,7 @@ from typing import Dict, List, Union
 
 from .block import *
         
-class PytorchModelBuilder2(nn.Module):
+class PytorchModelBuilder(nn.Module):
     def __init__(self, model_architecture: Dict):
         super().__init__()
         self.model_architecture = model_architecture
