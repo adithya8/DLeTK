@@ -101,26 +101,16 @@ examples['simple_1lyr_with_activation_async_input'] = {
     },
 }
 
+from pprint import pprint
 from main import parse_model_architecture
 import torch
 
-sample = torch.randn(5, 768)
-async_sample = torch.randn(5, 3)
+N=500
+    
+sample = torch.randn(N, 768)
+async_sample = torch.randn(N, 3)
 input_features_dict = {"input_features": sample}
-
-# model = parse_model_architecture(examples['simple_1lyr'])
-# print (model)
-# print (model(input_features_dict))
-# print ('---------------------------------------------------------------------------')
-# model = parse_model_architecture(examples['simple_2lyr'])
-# print (model)
-# print (model(input_features_dict))
-# print ('---------------------------------------------------------------------------')
-# model = parse_model_architecture(examples['simple_1lyr_with_activation'])
-# print (model)
-# print (model(input_features_dict))
-# print ('---------------------------------------------------------------------------')
 model = parse_model_architecture(examples['simple_1lyr_with_activation_async_input'])
-print (model)
-print (model({"input_features": sample, "async_input": async_sample}))
+op =  (model(**{"input_features": sample, "async_input": async_sample}))
 
+pprint (op)
