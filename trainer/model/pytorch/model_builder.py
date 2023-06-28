@@ -4,7 +4,7 @@ from typing import Dict, List, Union
 import torch
 import torch.nn as nn
 
-from .block import *
+from .ops import *
         
 class PytorchModelBuilder(nn.Module):
     def __init__(self, model_architecture: Dict):

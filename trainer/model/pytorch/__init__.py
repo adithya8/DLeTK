@@ -1,2 +1,2 @@
 from .model_builder import PytorchModelBuilder
-from .block import PytorchBlock, Cat, Add, Prod
+from .ops import PytorchOp, Cat, Add, Prod, Matmul, TensorDot, Permute, Transpose
