@@ -1,3 +1,4 @@
+from typing import List, Union
 import torch
 import torch.nn as nn
 
@@ -26,7 +27,7 @@ class Add(PytorchBlock):
         self.dim = dim
         
     def forward(self, *args):
-        return torch.sum(args, dim=self.dim)
+        return [torch.sum(arg, dim=self.dim) for arg in args]
 
 class Prod(PytorchBlock):
     def __init__(self, dim: int = -1) -> None:
@@ -34,21 +35,49 @@ class Prod(PytorchBlock):
         self.dim = dim
         
     def forward(self, *args):
-        return torch.prod(args, dim=self.dim)
-    
+        return [torch.prod(arg, dim=self.dim) for arg in args]
+
 class Matmul(PytorchBlock):
-    def __init__(self) -> None:
+    def __init__(self, transpose_second_matrix:bool=False) -> None:
         super().__init__()
+        self.transpose_second_matrix = transpose_second_matrix
     
-    def forward(self):
-        raise NotImplementedError("Matmul is not implemented yet.")
+    def forward(self, matrix1, matrix2):
+        if self.transpose_second_matrix:
+            return torch.matmul(matrix1, matrix2.T)
+        return torch.matmul(matrix1, matrix2)
+
+class TensorDot(PytorchBlock):
+    def __init__(self, dims: Union[int, List[int]]) -> None:
+        super().__init__()
+        self.dims = dims
+        
+    def forward(self, tensor1, tensor2):
+        return torch.tensordot(tensor1, tensor2, dims=self.dims)
+    
+class Permute(PytorchBlock):
+    def __init__(self, *dims) -> None:
+        super().__init__()
+        self.dims = dims
+        
+    def forward(self, *args):
+        return [arg.permute(*self.dims) for arg in args]
+
+class Transpose(PytorchBlock):
+    def __init__(self, dim0: int, dim1: int) -> None:
+        super().__init__()
+        self.dim0 = dim0
+        self.dim1 = dim1
+        
+    def forward(self, *args):
+        return [arg.transpose(self.dim0, self.dim1) for arg in args]
 
 ############################################
 
 class HFTransformers(PytorchBlock):
-    def __init__(self, model_name: str, **kwargs) -> None:
+    def __init__(self, model_name_or_path: str, **kwargs) -> None:
         super().__init__()
-        self.model_name = model_name
+        self.model_name_or_path = model_name_or_path
         self.kwargs = kwargs
         self.model = None
     
