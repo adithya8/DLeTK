@@ -102,11 +102,14 @@ examples['simple_1lyr_with_activation_async_input'] = {
 }
 
 from pprint import pprint
-from main import parse_model_architecture
+from main import parse_model_architecture, PytorchModelBuilder
 import torch
 
+############# Test 1 ##################
+# Model Generation and Fwd Pass check #
+#######################################
+
 N=500
-    
 sample = torch.randn(N, 768)
 async_sample = torch.randn(N, 3)
 input_features_dict = {"input_features": sample}
@@ -114,3 +117,18 @@ model = parse_model_architecture(examples['simple_1lyr_with_activation_async_inp
 op =  (model(**{"input_features": sample, "async_input": async_sample}))
 
 pprint (op)
+print ('----------------------------------')
+
+############# Test 2 ##################
+# Model Save and Load Check ###########
+#######################################
+
+PATH = "/data/avirinchipur/dummy/"
+model.save_model(PATH)
+pprint (model.state_dict())
+print ('----------------------------------')
+model2 = PytorchModelBuilder.from_pretrained(PATH)
+pprint (model2.state_dict())
+print ('----------------------------------')
+
+
