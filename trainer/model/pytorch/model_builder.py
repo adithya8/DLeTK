@@ -1,11 +1,24 @@
+import os
+import json
+from typing import Dict, List, Union
 import torch
 import torch.nn as nn
-from typing import Dict, List, Union
 
 from .block import *
         
 class PytorchModelBuilder(nn.Module):
     def __init__(self, model_architecture: Dict):
+        """
+            Initializes the model builder
+            
+            Parameters
+            -----------
+                model_architecture: Dict - Dictionary containing the model architecture
+            
+            Returns
+            --------
+                PytorchModelBuilder - Instance of the nn.Module
+        """
         super().__init__()
         self.model_architecture = model_architecture
         self.parse_model_architecture()
@@ -13,6 +26,14 @@ class PytorchModelBuilder(nn.Module):
     def forward(self, **kwargs):
         """
             Forward Pass of the model
+            
+            Parameters
+            -----------
+                kwargs: Dict[str, torch.Tensor] - Dictionary of input features
+            
+            Returns
+            --------
+                Dict[str, torch.Tensor] - Dictionary of output features
         """
         forward_output_features = self.model_architecture["output_names"]
         for layer_name in self.model_architecture['architecture'].keys():
@@ -35,25 +56,58 @@ class PytorchModelBuilder(nn.Module):
         """
             Parses the model architecture and adds the layers to the model
         """
+        if 'architecture' not in self.model_architecture:
+            return 
         for layer_name, layer in self.model_architecture['architecture'].items():
             self.add_module(layer_name, eval(f"{layer['module']}(**{layer['module_args']})"))
             
     def save_model(self, model_dir_path: str) -> None:
         """
             Saves the model to the model_path
+            
+            Parameters
+            -----------
+                model_dir_path: str - Path to the model directory
         """
-        raise NotImplementedError("Saving model is not implemented for Pytorch Model Builder")
+        if os.path.exists(model_dir_path):
+            raise ValueError("Model directory already exists")
+        
+        os.makedirs(model_dir_path)
+        torch.save(self.state_dict(), os.path.join(model_dir_path, "model.pt"))
+        
+        with open(os.path.join(model_dir_path, "model_architecture.json"), "w") as f:
+            json.dump(self.model_architecture, f)
     
     def load_model(self, model_dir_path: str) -> None:
         """
             Loads the model from the model_path
         """
-        raise NotImplementedError("Loading model is not implemented for Pytorch Model Builder")
+        if not os.path.exists(model_dir_path):
+            raise ValueError("Model directory does not exists")
+        
+        try:
+            with open(os.path.join(model_dir_path, "model_architecture.json"), "r") as f:
+                self.model_architecture = json.load(f)
+        except FileNotFoundError:
+            raise ValueError("Model architecture file not found")
+        
+        self.parse_model_architecture()
+        self.load_state_dict(torch.load(os.path.join(model_dir_path, "model.pt")), strict=False)
     
     @staticmethod
-    def from_pretrained(model_dir_path: str):
+    def from_pretrained(model_dir_path: str) -> nn.Module:
         """
             Loads the model from the model_path
+            
+            Parameters
+            -----------
+                model_dir_path: str - Path to the model directory
+            
+            Returns
+            --------
+                nn.Module - Instance of the nn.Module
         """
-        raise NotImplementedError("Loading model is not implemented for Pytorch Model Builder")
+        model = PytorchModelBuilder({})
+        model.load_model(model_dir_path)
+        return model
     
