@@ -130,5 +130,8 @@ print ('----------------------------------')
 model2 = PytorchModelBuilder.from_pretrained(PATH)
 pprint (model2.state_dict())
 print ('----------------------------------')
+op2 = (model2(**{"input_features": sample, "async_input": async_sample}))
 
-
+print (op2)
+print (torch.equal(op['output_2'], op2['output_2']))
+print ('----------------------------------')
